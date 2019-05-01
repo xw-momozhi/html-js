@@ -1,15 +1,30 @@
 var packing=(function(){
 	var evenID=0;
+	var delEven={};
+	var pushEven={};
 	function addEventCllback(ev,cllback){
-		var cllbackID="cllbackID"+evenID++
+		var cllbackID="cllbackID"+evenID++;
+		if(ev && ev._funname){
+			delEven[ev._funname]=delEven[ev._funname]||[];//记录调用方法时传入的回调方法
+			delEven[ev._funname].push(cllbackID);
+		}
 		addEvent(cllbackID,function(e){
+			 removeEven();
 			 if(ev){
 				  cllback.apply(ev,e.detail);
 			 }else{
 				  cllback.apply(window,e.detail);
 			 }
-			 removeEvent(cllbackID);
 		})
+		function removeEven(){
+			if(ev && ev._funname && delEven[ev._funname]){
+				for(var i=0;i<delEven[ev._funname].length;i++){
+					var id=delEven[ev._funname][i];
+					removeEvent(id,pushEven[id])
+				}
+				delete delEven[ev._funname];
+			}
+		}
 		return cllbackID;
 	}
 	//回调方法转换成回调方法字符串
@@ -32,7 +47,9 @@ var packing=(function(){
 					parames.push(arguments[i])
 				}
 			}
-			packing.sendMessage(data.callbackId,parames)
+			parames._funname=data.callbackId;
+			//这里的参数回调是一次性的
+			packing.sendMessage(data.callbackId,parames,true)
 		}
 	}
 	//发送数据过滤
@@ -88,29 +105,28 @@ var packing=(function(){
 		var myEvent = new CustomEvent(evenName,{detail:data});
 			// 随后在对应的元素上触发该事件
 		if(window.dispatchEvent) {  
-			window.dispatchEvent(myEvent);
-			document.dispatchEvent(myEvent);
+			window.dispatchEvent(myEvent)// || document.dispatchEvent(myEvent);
 		} else {
-			document.fireEvent(myEvent);
-			document.dispatchEvent(myEvent);
+			document.fireEvent(myEvent) || document.dispatchEvent(myEvent);
 		}
 	}
 	//添加自定义事件
-	function addEvent(evenName,cllback){
-		var handler=function(e){
-			cllback(e);
-			removeEvent(evenName,handler)
-		}
+	function addEvent(evenName,handler){
 		window.addEventListener(evenName, handler,false);
+		pushEven[evenName]=handler;
 	}
 	//移除自定义事件
 	function removeEvent(evenName,handler){
 		window.removeEventListener(evenName,handler,false);
+	    delete pushEven[evenName];
 	}
 	return {
 		setStringJson:stringJson,
 		sendMessage:function(name,json){//发送消息
+			//向子窗口发送消息
 			window.frames[0].postMessage({name:name,data:stringJson(json)}, '*');
+			//向父窗口发送消息
+			//window.parent.postMessage({name:name,data:stringJson(json)}, '*');
 		},
 		evenfilter:function(callback){//过滤注册事件参数
 			return function(e){
