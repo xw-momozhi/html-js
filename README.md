@@ -57,12 +57,12 @@ sendMessage:function(name,json){//发送消息
 //子页面 监听 deviceready
 //packing.evenfilter 过滤事件的数据 得到的data 就是父页面传过的数据 
 window.addEventListener("deviceready",packing.evenfilter(function(data){
-		if(data){//将数据赋值给window
-			for(var i in data){
-				window[i]=data[i]
-			}
-      init();
+	if(data){//将数据赋值给window
+		for(var i in data){
+			window[i]=data[i]
 		}
+		init();
+	}
 }),false);
 function init(){
     //这样直接调用父页面的方法就像
