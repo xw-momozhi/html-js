@@ -65,7 +65,7 @@ window.addEventListener("deviceready",packing.evenfilter(function(data){
 	}
 }),false);
 function init(){
-    //这样直接调用父页面的方法就像
+    //这样直接调用父页面的方法就行了
     service.success();
 }
 ```
