@@ -105,7 +105,7 @@ var packing=(function(){
 		var myEvent = new CustomEvent(evenName,{detail:data});
 			// 随后在对应的元素上触发该事件
 		if(window.dispatchEvent) {  
-			window.dispatchEvent(myEvent)// || document.dispatchEvent(myEvent);
+			window.dispatchEvent(myEvent) || document.dispatchEvent(myEvent);
 		} else {
 			document.fireEvent(myEvent) || document.dispatchEvent(myEvent);
 		}
